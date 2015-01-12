@@ -1,0 +1,23 @@
+<div class="container">
+  <div class="header">
+    <h3 class="text-muted">Ƀ tracker<br><span class="small">Search for transactional connections between two or more bitcoin addresses</span></h3>
+  </div>
+
+  <form role="form" ng-submit="submit()">
+    <div class="form-group">
+      <div class="input-group">
+        <input type="text" class="form-control" ng-model="query" placeholder="Use space to seperate addresses">
+        <span class="input-group-btn">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </span>
+      </div>
+    </div>
+  </form>
+  <div class="results panel" graph>
+    {{ resultRoute.join(' > ') }}
+  </div>
+
+  <div class="footer">
+    <p>© Eli Sagy 2014.</p>
+  </div>
+</div>
