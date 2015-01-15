@@ -14,7 +14,9 @@
       "sass": true,
       "ngroute": true,
       "bootstrap": true,
-      "uibootstrap": true
+      "uibootstrap": true,
+      "socketio": true,
+      "mongoose": true
     }
   },
   "generator-ng-component": {
