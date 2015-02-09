@@ -13,6 +13,7 @@ bitcoinapi.setAccess('default-safe');
 module.exports = function(app) {
 
   // Insert routes below
+  app.use('/api/things', require('./api/thing'));
   app.use('/bitcoin/api', bitcoinapi.app);
   
   // All undefined asset or api routes should return a 404
