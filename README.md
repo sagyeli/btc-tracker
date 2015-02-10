@@ -1,6 +1,6 @@
 # btc-tracker
 
-## isntall
+## install
 
 Download and install Node.js. Download files and instructions can be found here: http://nodejs.org/download/
 Download and install MongoDB. Download files and instructions can be found here: http://docs.mongodb.org/manual/installation/
