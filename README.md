@@ -1,4 +1,4 @@
-# btc-tracker
+# BTC-tracker
 
 ## install
 
