@@ -7,6 +7,7 @@ Download and install MongoDB. Download files and instructions can be found here:
 Open Node.js command prompt and insert:
 ```
 git clone https://github.com/sagyeli/btc-tracker
+cd btc-tracker
 npm install
 bower install
 ```
