@@ -5,27 +5,42 @@
 
 'use strict';
 
-var Thing = require('../api/thing/thing.model');
+var bitcoin = require('../../node_modules/bitcoin-node-api/node_modules/bitcoin');
+var bitcoinClient = new bitcoin.Client({ host: 'localhost', port: 8332, user: 'admin', pass: '1234' });
+
+var Block = require('../api/block/block.model');
 
 
-Thing.find({}).remove(function() {
-  Thing.create({
-    name : 'Development Tools',
-    info : 'Integration with popular tools such as Bower, Grunt, Karma, Mocha, JSHint, Node Inspector, Livereload, Protractor, Jade, Stylus, Sass, CoffeeScript, and Less.'
-  }, {
-    name : 'Server and Client integration',
-    info : 'Built with a powerful and fun stack: MongoDB, Express, AngularJS, and Node.'
-  }, {
-    name : 'Smart Build System',
-    info : 'Build system ignores `spec` files, allowing you to keep tests alongside code. Automatic injection of scripts and styles into your index.html'
-  },  {
-    name : 'Modular Structure',
-    info : 'Best practice client and server structures allow for more code reusability and maximum scalability'
-  },  {
-    name : 'Optimized Build',
-    info : 'Build process packs up your templates as a single JavaScript payload, minifies your scripts/css/images, and rewrites asset names for caching.'
-  },{
-    name : 'Deployment Ready',
-    info : 'Easily deploy your app to Heroku or Openshift with the heroku and openshift subgenerators'
+Block.count(function (err, count) {
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  var blockRecordCreator = function(firstIndex, lastIndex) {
+    bitcoinClient.cmd([{ method: 'getblockhash', params: [firstIndex] }], function(err, response) {
+      if (err) {
+        'Error! ' + console.log(err);
+        return;
+      }
+
+      Block.create({
+        hash : response,
+        info : { test: 'Bla bla bla' }
+      });
+
+      if (firstIndex < lastIndex) {
+        blockRecordCreator(firstIndex + 1, lastIndex);
+      }
+    });
+  }
+
+  bitcoinClient.cmd([{ method: 'getblockcount', params: [] }], function(err, response) {
+    if (err) {
+      console.error(err);
+      return;
+    }
+
+    blockRecordCreator(count, parseInt(response));
   });
 });
