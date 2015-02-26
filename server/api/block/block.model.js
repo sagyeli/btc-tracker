@@ -5,7 +5,7 @@ var mongoose = require('mongoose'),
 
 var BlockSchema = new Schema({
   hash: String,
-  info: Schema.Types.Mixed,
+  info: Schema.Types.Mixed
 });
 
 module.exports = mongoose.model('Block', BlockSchema);

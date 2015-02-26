@@ -9,6 +9,7 @@ var bitcoin = require('../../node_modules/bitcoin-node-api/node_modules/bitcoin'
 var bitcoinClient = new bitcoin.Client({ host: 'localhost', port: 8332, user: 'admin', pass: '1234' });
 
 var Block = require('../api/block/block.model');
+var Transaction = require('../api/transaction/transaction.model');
 
 
 Block.count(function (err, count) {
@@ -17,21 +18,40 @@ Block.count(function (err, count) {
     return;
   }
 
-  var blockRecordCreator = function(firstIndex, lastIndex) {
-    bitcoinClient.cmd([{ method: 'getblockhash', params: [firstIndex] }], function(err, response) {
+  var blockRecordCreator = function(firstBlockIndex, lastBlockIndex) {
+    bitcoinClient.cmd([{ method: 'getblockhash', params: [firstBlockIndex] }], function(err, response) {
       if (err) {
-        'Error! ' + console.log(err);
+        console.error(err);
         return;
       }
 
-      Block.create({
+      var block = new Block({
         hash : response,
-        info : { test: 'Bla bla bla' }
+        info : { }
       });
 
-      if (firstIndex < lastIndex) {
-        blockRecordCreator(firstIndex + 1, lastIndex);
-      }
+      bitcoinClient.cmd([{ method: 'getblock', params: [response] }], function(err, response) {
+        if (err) return handleError(err);
+
+        block.save(function (err) {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          
+          for (var i = 0 ; response.tx && i < response.tx.length ; i++) {
+            Transaction.create({
+              hash : response.tx[i],
+              block: block,
+              info : { }
+            });          
+          }
+        });
+
+        if (firstBlockIndex < lastBlockIndex) {
+          blockRecordCreator(firstBlockIndex + 1, lastBlockIndex);
+        }
+      });
     });
   }
 
