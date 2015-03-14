@@ -10,6 +10,7 @@ var bitcoinClient = new bitcoin.Client({ host: 'localhost', port: 8332, user: 'a
 
 var Block = require('../api/block/block.model');
 var Transaction = require('../api/transaction/transaction.model');
+var Address = require('../api/address/address.model');
 
 
 Block.count(function (err, count) {
@@ -26,8 +27,8 @@ Block.count(function (err, count) {
       }
 
       var block = new Block({
-        hash : response,
-        info : { }
+        hash: response,
+        info: { }
       });
 
       bitcoinClient.cmd([{ method: 'getblock', params: [response] }], function(err, response) {
@@ -38,13 +39,31 @@ Block.count(function (err, count) {
             console.error(err);
             return;
           }
-          
+
           for (var i = 0 ; response.tx && i < response.tx.length ; i++) {
             Transaction.create({
-              hash : response.tx[i],
+              hash: response.tx[i],
               block: block,
-              info : { }
-            });          
+              info: { }
+            });
+
+            bitcoinClient.cmd([{ method: 'getrawtransaction', params: [response.tx[i], 1] }], function(err, response) {
+              if (err) {
+                console.error(err);
+                return;
+              }
+
+              for (var i = 0 ; i < response.vout.length ; i++) {
+                var scriptPubKey = response.vout[i].scriptPubKey;
+                if (scriptPubKey) {
+                  for (var j = 0 ; j < scriptPubKey.addresses.length ; j++) {
+                    Address.create({
+                      publicKey: scriptPubKey.addresses[j],
+                    });
+                  }
+                }
+              }
+            });
           }
         });
 
