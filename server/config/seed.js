@@ -13,65 +13,66 @@ var Transaction = require('../api/transaction/transaction.model');
 var Address = require('../api/address/address.model');
 
 
-Block.count(function (err, count) {
-  if (err) {
-    console.error(err);
-    return;
-  }
+var transactionRecordCreator = function(txid, block) {
+  bitcoinClient.cmd([{ method: 'getrawtransaction', params: [txid, 1] }], function(err, response) {
+    if (err) {
+      console.error(err);
+      return;
+    }
 
-  var blockRecordCreator = function(firstBlockIndex, lastBlockIndex) {
-    bitcoinClient.cmd([{ method: 'getblockhash', params: [firstBlockIndex] }], function(err, response) {
+    var transaction = new Transaction({
+      hash: response.txid,
+      block: block,
+      input: [],
+      output: [],
+    });
+
+    transaction.save(function (err) {
       if (err) {
         console.error(err);
         return;
       }
+    });
+  });
+}
 
-      var block = new Block({
-        hash: response,
-        info: { }
-      });
+var blockRecordCreator = function(firstBlockIndex, lastBlockIndex) {
+  bitcoinClient.cmd([{ method: 'getblockhash', params: [firstBlockIndex] }], function(err, response) {
+    if (err) {
+      console.error(err);
+      return;
+    }
 
-      bitcoinClient.cmd([{ method: 'getblock', params: [response] }], function(err, response) {
-        if (err) return handleError(err);
+    var block = new Block({
+      hash: response,
+      info: { }
+    });
 
-        block.save(function (err) {
-          if (err) {
-            console.error(err);
-            return;
-          }
+    bitcoinClient.cmd([{ method: 'getblock', params: [response] }], function(err, response) {
+      if (err) return handleError(err);
 
-          for (var i = 0 ; response.tx && i < response.tx.length ; i++) {
-            Transaction.create({
-              hash: response.tx[i],
-              block: block,
-              info: { }
-            });
+      block.save(function (err) {
+        if (err) {
+          console.error(err);
+          return;
+        }
 
-            bitcoinClient.cmd([{ method: 'getrawtransaction', params: [response.tx[i], 1] }], function(err, response) {
-              if (err) {
-                console.error(err);
-                return;
-              }
-
-              for (var i = 0 ; i < response.vout.length ; i++) {
-                var scriptPubKey = response.vout[i].scriptPubKey;
-                if (scriptPubKey) {
-                  for (var j = 0 ; j < scriptPubKey.addresses.length ; j++) {
-                    Address.create({
-                      publicKey: scriptPubKey.addresses[j],
-                    });
-                  }
-                }
-              }
-            });
-          }
-        });
+        for (var i = 0 ; response.tx && i < response.tx.length ; i++) {
+          transactionRecordCreator(response.tx[i], block);
+        }
 
         if (firstBlockIndex < lastBlockIndex) {
           blockRecordCreator(firstBlockIndex + 1, lastBlockIndex);
         }
       });
     });
+  });
+}
+
+Block.count(function (err, count) {
+  if (err) {
+    console.error(err);
+    return;
   }
 
   bitcoinClient.cmd([{ method: 'getblockcount', params: [] }], function(err, response) {

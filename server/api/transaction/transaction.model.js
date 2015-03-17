@@ -6,7 +6,16 @@ var mongoose = require('mongoose'),
 var TransactionSchema = new Schema({
   hash: String,
   block: { type: Schema.ObjectId, ref: 'BlockSchema' },
-  info: Schema.Types.Mixed
+  input: [{
+  	// address: { type: Schema.ObjectId, ref: 'AddressSchema' },
+  	address: String,
+  	amount: Number
+  }],
+  output: [{
+  	// address: { type: Schema.ObjectId, ref: 'AddressSchema' },
+  	address: String,
+  	amount: Number
+  }]
 });
 
 module.exports = mongoose.model('Transaction', TransactionSchema);
