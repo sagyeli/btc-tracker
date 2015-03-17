@@ -20,7 +20,8 @@
     "socket.io": "^1.0.6",
     "socket.io-client": "^1.0.6",
     "socketio-jwt": "^2.0.2",
-    "bitcoin-node-api": "~0.1.0"
+    "bitcoin-node-api": "~0.1.0",
+    "promised-io": "~0.3.5"
   },
   "devDependencies": {
     "grunt": "~0.4.4",
